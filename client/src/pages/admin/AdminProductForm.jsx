@@ -31,12 +31,20 @@ export default function AdminProductForm() {
   ];
 
   useEffect(() => {
-    if (id) {
+    // Only fetch if we have a valid id param (from /admin/products/edit/:id route)
+    // id will be undefined when on /admin/products/new route
+    if (id && id !== "undefined") {
       fetchProduct();
     }
   }, [id]);
 
   const fetchProduct = async () => {
+    // Safety check - don't fetch if id is missing or invalid
+    if (!id || id === "undefined") {
+      console.log("Skipping fetch - no valid product ID");
+      return;
+    }
+
     try {
       const response = await adminProductAPI.getById(id);
       const product = response.data.product;

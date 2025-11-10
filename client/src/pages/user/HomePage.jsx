@@ -69,9 +69,9 @@ export default function HomePage() {
                 title: "Easy Returns",
                 desc: "30-day return policy",
               },
-            ].map((feature, index) => (
+            ].map((feature) => (
               <div
-                key={index}
+                key={feature.title}
                 className="glass-card p-8 rounded-2xl text-center transform hover:scale-105 transition duration-300"
               >
                 <feature.icon className="w-16 h-16 mx-auto mb-4 text-orange-600" />

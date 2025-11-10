@@ -4,29 +4,33 @@ from products.serializers import ProductSerializer
 
 
 class OrderItemSerializer(serializers.ModelSerializer):
+    _id = serializers.IntegerField(source='id', read_only=True)
     product = ProductSerializer(read_only=True)
 
     class Meta:
         model = OrderItem
-        fields = ['id', 'product', 'product_name', 'quantity', 'price']
+        fields = ['id', '_id', 'product', 'product_name', 'quantity', 'price']
 
 
 class AdminNoteSerializer(serializers.ModelSerializer):
+    _id = serializers.IntegerField(source='id', read_only=True)
+    
     class Meta:
         model = AdminNote
-        fields = ['id', 'note', 'created_at']
+        fields = ['id', '_id', 'note', 'created_at']
         read_only_fields = ['created_at']
 
 
 class OrderSerializer(serializers.ModelSerializer):
+    _id = serializers.IntegerField(source='id', read_only=True)
     items = OrderItemSerializer(many=True, read_only=True)
     admin_notes = AdminNoteSerializer(many=True, read_only=True)
     user_email = serializers.EmailField(source='user.email', read_only=True)
 
     class Meta:
         model = Order
-        fields = ['id', 'order_id', 'user', 'user_email', 'total_amount', 'status', 'shipping_address', 'items', 'admin_notes', 'created_at', 'updated_at']
-        read_only_fields = ['id', 'order_id', 'created_at', 'updated_at']
+        fields = ['id', '_id', 'order_id', 'user', 'user_email', 'total_amount', 'status', 'shipping_address', 'items', 'admin_notes', 'created_at', 'updated_at']
+        read_only_fields = ['id', '_id', 'order_id', 'created_at', 'updated_at']
 
 
 class OrderCreateSerializer(serializers.Serializer):

@@ -59,6 +59,94 @@ def get_product_by_id(request, pk):
 
 
 # Admin endpoints
+@api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticated])
+def get_all_products_admin(request):
+    """Admin: Get all products with pagination and filters, or create new product"""
+    if request.user.role != 'admin':
+        return Response({'message': 'Unauthorized'}, status=status.HTTP_403_FORBIDDEN)
+    
+    if request.method == 'POST':
+        # Create new product
+        serializer = ProductSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    # GET - List products with pagination and filters
+    products = Product.objects.all()
+    
+    # Include deleted products option
+    include_deleted = request.GET.get('includeDeleted', 'false')
+    if include_deleted.lower() != 'true':
+        products = products.filter(is_deleted=False)
+    
+    # Search
+    search = request.GET.get('search', '')
+    if search:
+        products = products.filter(
+            Q(name__icontains=search) | Q(description__icontains=search) | Q(slug__icontains=search)
+        )
+    
+    # Category filter
+    category = request.GET.get('category', '')
+    if category and category != 'All':
+        products = products.filter(category=category)
+    
+    # Pagination
+    page = int(request.GET.get('page', 1))
+    limit = int(request.GET.get('limit', 10))
+    
+    paginator = Paginator(products.order_by('-created_at'), limit)
+    page_obj = paginator.get_page(page)
+    
+    serializer = ProductSerializer(page_obj, many=True)
+    
+    return Response({
+        'products': serializer.data,
+        'pagination': {
+            'page': page,
+            'limit': limit,
+            'total': paginator.count,
+            'pages': paginator.num_pages
+        }
+    })
+
+
+@api_view(['GET', 'PUT', 'DELETE'])
+@permission_classes([IsAuthenticated])
+def admin_product_detail(request, pk):
+    """Admin: Get, update, or delete single product by ID"""
+    if request.user.role != 'admin':
+        return Response({'message': 'Unauthorized'}, status=status.HTTP_403_FORBIDDEN)
+    
+    try:
+        product = Product.objects.get(pk=pk)
+    except Product.DoesNotExist:
+        return Response({'message': 'Product not found'}, status=status.HTTP_404_NOT_FOUND)
+    
+    if request.method == 'GET':
+        serializer = ProductSerializer(product)
+        return Response({'product': serializer.data})
+    
+    elif request.method == 'PUT':
+        serializer = ProductSerializer(product, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    else:  # DELETE
+        product.is_deleted = True
+        product.save()
+        serializer = ProductSerializer(product)
+        return Response({
+            'message': 'Product deleted successfully',
+            'product': serializer.data
+        })
+
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def create_product(request):

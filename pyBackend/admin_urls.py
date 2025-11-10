@@ -1,17 +1,17 @@
 from django.urls import path
 from users.views import admin_login
-from products.views import create_product, update_product, delete_product, bulk_import_products
+from products.views import get_all_products_admin, admin_product_detail, create_product, bulk_import_products
 from orders.views import get_all_orders, get_admin_order_by_id, update_order_status, add_admin_note, get_dashboard_stats, export_orders_csv
 
 urlpatterns = [
     # Auth
     path('auth/login', admin_login, name='admin_login'),
     
-    # Products
-    path('products', create_product, name='admin_create_product'),
-    path('products/<int:pk>', update_product, name='admin_update_product'),
-    path('products/<int:pk>/delete', delete_product, name='admin_delete_product'),
+    # Products - using a view class to handle both GET and POST
+    path('products', get_all_products_admin, name='admin_products'),
+    path('products/create', create_product, name='admin_create_product'),
     path('products/import', bulk_import_products, name='bulk_import_products'),
+    path('products/<int:pk>', admin_product_detail, name='admin_product_detail'),
     
     # Orders
     path('orders', get_all_orders, name='admin_get_all_orders'),
