@@ -210,18 +210,39 @@ def get_dashboard_stats(request):
     total_revenue = Order.objects.aggregate(total=Sum('total_amount'))['total'] or 0
     total_products = Product.objects.filter(is_deleted=False).count()
     
-    # Orders by status
-    orders_by_status = {}
+    # Orders by status - format as array to match Express API
+    orders_by_status = []
     for status_choice, _ in Order.STATUS_CHOICES:
         count = Order.objects.filter(status=status_choice).count()
-        orders_by_status[status_choice] = count
+        if count > 0:  # Only include statuses with orders
+            orders_by_status.append({
+                '_id': status_choice,
+                'count': count
+            })
+    
+    # Recent orders
+    recent_orders = Order.objects.select_related('user').order_by('-created_at')[:5]
+    recent_orders_data = []
+    for order in recent_orders:
+        recent_orders_data.append({
+            '_id': str(order.id),
+            'order_id': order.order_id,
+            'user': {
+                'name': order.user.name,
+                'email': order.user.email
+            },
+            'totalAmount': float(order.total_amount),
+            'status': order.status,
+            'createdAt': order.created_at.isoformat()
+        })
     
     return Response({
         'totalOrders': total_orders,
         'pendingOrders': pending_orders,
         'totalRevenue': float(total_revenue),
         'totalProducts': total_products,
-        'ordersByStatus': orders_by_status
+        'ordersByStatus': orders_by_status,
+        'recentOrders': recent_orders_data
     })
 
 

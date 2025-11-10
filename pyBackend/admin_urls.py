@@ -19,5 +19,5 @@ urlpatterns = [
     path('orders/<int:pk>/status', update_order_status, name='update_order_status'),
     path('orders/<int:pk>/notes', add_admin_note, name='add_admin_note'),
     path('orders/export', export_orders_csv, name='export_orders_csv'),
-    path('dashboard/stats', get_dashboard_stats, name='dashboard_stats'),
+    path('orders/dashboard/stats', get_dashboard_stats, name='dashboard_stats'),
 ]
