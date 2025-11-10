@@ -62,6 +62,9 @@ MIDDLEWARE = [
 CORS_ALLOWED_ORIGINS = config('CORS_ALLOWED_ORIGINS', default='http://localhost:5173').split(',')
 CORS_ALLOW_CREDENTIALS = True
 
+# Disable trailing slash requirement for API endpoints
+APPEND_SLASH = False
+
 ROOT_URLCONF = 'ecommerce_api.urls'
 
 TEMPLATES = [

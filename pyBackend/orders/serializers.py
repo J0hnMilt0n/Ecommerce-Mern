@@ -11,6 +11,12 @@ class OrderItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = OrderItem
         fields = ['id', '_id', 'product', 'product_name', 'productName', 'quantity', 'price']
+    
+    def to_representation(self, instance):
+        """Convert price to float for JavaScript compatibility"""
+        representation = super().to_representation(instance)
+        representation['price'] = float(representation['price'])
+        return representation
 
 
 class AdminNoteSerializer(serializers.ModelSerializer):
