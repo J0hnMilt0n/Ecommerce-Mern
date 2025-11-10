@@ -12,10 +12,21 @@ import csv
 from decimal import Decimal
 
 
-@api_view(['POST'])
+@api_view(['GET', 'POST'])
 @permission_classes([IsAuthenticated])
 def create_order(request):
-    """Create new order"""
+    """Create new order (POST) or get user orders (GET)"""
+    
+    if request.method == 'GET':
+        # Get user's orders
+        try:
+            orders = Order.objects.filter(user=request.user).prefetch_related('items', 'admin_notes')
+            serializer = OrderSerializer(orders, many=True)
+            return Response({'orders': serializer.data})
+        except Exception as e:
+            return Response({'message': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+    # POST - Create new order
     try:
         serializer = OrderCreateSerializer(data=request.data)
         

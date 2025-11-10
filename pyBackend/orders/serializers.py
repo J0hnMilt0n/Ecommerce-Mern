@@ -7,10 +7,18 @@ class OrderItemSerializer(serializers.ModelSerializer):
     _id = serializers.IntegerField(source='id', read_only=True)
     product = ProductSerializer(read_only=True)
     productName = serializers.CharField(source='product_name', read_only=True)
+    name = serializers.CharField(source='product_name', read_only=True)
+    image = serializers.SerializerMethodField()
 
     class Meta:
         model = OrderItem
-        fields = ['id', '_id', 'product', 'product_name', 'productName', 'quantity', 'price']
+        fields = ['id', '_id', 'product', 'product_name', 'productName', 'name', 'image', 'quantity', 'price']
+    
+    def get_image(self, obj):
+        """Get product image, fallback to placeholder"""
+        if obj.product and obj.product.images:
+            return obj.product.images[0] if isinstance(obj.product.images, list) and len(obj.product.images) > 0 else None
+        return None
     
     def to_representation(self, instance):
         """Convert price to float for JavaScript compatibility"""
@@ -35,6 +43,7 @@ class OrderSerializer(serializers.ModelSerializer):
     items = OrderItemSerializer(many=True, read_only=True)
     adminNotes = AdminNoteSerializer(many=True, read_only=True, source='admin_notes')
     user_email = serializers.EmailField(source='user.email', read_only=True)
+    user_name = serializers.CharField(source='user.name', read_only=True)
     totalAmount = serializers.FloatField(source='total_amount', read_only=True)
     shippingAddress = serializers.JSONField(source='shipping_address', read_only=True)
     createdAt = serializers.DateTimeField(source='created_at', read_only=True)
@@ -43,7 +52,7 @@ class OrderSerializer(serializers.ModelSerializer):
     class Meta:
         model = Order
         fields = [
-            'id', '_id', 'order_id', 'orderId', 'user', 'user_email', 
+            'id', '_id', 'order_id', 'orderId', 'user_email', 'user_name',
             'total_amount', 'totalAmount', 'status', 
             'shipping_address', 'shippingAddress', 
             'items', 'admin_notes', 'adminNotes', 
